@@ -10,7 +10,7 @@
 
 ## 开始食用
 
-将memberId存入`config.json`
+将memberId存入`config.json`,没有请手动创建
 
 ```GO
 go run cmd/youth/main.go 
