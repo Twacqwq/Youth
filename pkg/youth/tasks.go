@@ -68,9 +68,6 @@ func Token(sign string) (string, error) {
 }
 
 func Do(token, memberId string) (bool, error) {
-	if token == "" {
-		return false, errors.New("token error")
-	}
 	url := fmt.Sprintf("https://%s/apih5/api/young/course/chapter/saveHistory", YouthStudy)
 	reqBody := fmt.Sprintf("chapterId=%s", memberId)
 	headers := map[string]string{
