@@ -1,11 +1,8 @@
 package pkg
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
-	"io"
-	"log"
 	"net/http"
 	uu "net/url"
 	"strconv"
@@ -22,73 +19,52 @@ const (
 )
 
 func NewChapterId() (string, error) {
-	client := &http.Client{}
 	url := fmt.Sprintf("https://%s/apih5/api/young/chapter/new", YouthStudy)
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		log.Fatalf("failed %v", err)
+	headers := map[string]string{
+		"X-Litemall-IdentiFication": "young",
+	}
+	code, details, err := Get(url, WithHeaders(headers))
+	if err != nil || code != http.StatusOK {
 		return "", err
 	}
-	req.Header.Add("X-Litemall-IdentiFication", "young")
-	res, err := client.Do(req)
-	if err != nil {
-		log.Fatalf("failed response %v", err)
-		return "", err
-	}
-	defer res.Body.Close()
-	data, _ := io.ReadAll(res.Body)
-	id := gjson.Get(string(data), "data.entity.id")
-	return id.String(), nil
+	id := gjson.Get(details, "data.entity.id").String()
+	return id, nil
 }
 
 func Sign(memberId int) (string, error) {
 	url := fmt.Sprintf("https://%s/questionnaire/getYouthLearningUrl?mid=%d", APIHost, memberId)
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		log.Fatalf("failed %v", err)
+	headers := map[string]string{
+		"User-Agent": UserAgent,
+	}
+	code, details, err := Get(url, WithHeaders(headers))
+	if err != nil || code != http.StatusOK {
 		return "", err
 	}
-	req.Header.Add("User-Agent", UserAgent)
-	res, err := client.Do(req)
-	if err != nil {
-		log.Fatalf("failed response %v", err)
-		return "", err
-	}
-	defer res.Body.Close()
-	data, _ := io.ReadAll(res.Body)
-	if gjson.Get(string(data), "status").String() == "10002" {
+	if gjson.Get(details, "status").String() == "10002" {
 		return "", errors.New("memberId not found")
 	}
-	val := gjson.Get(string(data), "youthLearningUrl")
-	sign := val.String()[strings.Index(val.String(), "=")+1:]
+	val := gjson.Get(details, "youthLearningUrl").String()
+	sign := val[strings.Index(val, "=")+1:]
 	return sign, nil
 }
 
 func Token(sign string) (string, error) {
 	url := fmt.Sprintf("https://%s/apih5/api/user/get", YouthStudy)
-	client := &http.Client{}
 	reqBody := fmt.Sprintf("sign=%s", uu.QueryEscape(sign))
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer([]byte(reqBody)))
-	if err != nil {
-		log.Fatalf("failed %v", err)
+	headers := map[string]string{
+		"Content-Type":              "application/x-www-form-urlencoded",
+		"X-Litemall-IdentiFication": "young",
+		"User-Agent":                UserAgent,
+	}
+	code, details, err := Post(url, WithHeaders(headers), WithData(reqBody))
+	if err != nil || code != http.StatusOK {
 		return "", err
 	}
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Add("X-Litemall-IdentiFication", "young")
-	req.Header.Add("User-Agent", UserAgent)
-	res, err := client.Do(req)
-	if err != nil {
-		log.Fatalf("failed response %v", err)
-		return "", err
-	}
-	defer res.Body.Close()
-	data, _ := io.ReadAll(res.Body)
-	if gjson.Get(string(data), "errno").String() == strconv.Itoa(-4) {
+	if gjson.Get(details, "errno").String() == strconv.Itoa(-4) {
 		return "", errors.New("error token")
 	}
-	token := gjson.Get(string(data), "data.entity.token")
-	return token.String(), nil
+	token := gjson.Get(details, "data.entity.token").String()
+	return token, nil
 }
 
 func Do(token, memberId string) (bool, error) {
@@ -96,24 +72,18 @@ func Do(token, memberId string) (bool, error) {
 		return false, errors.New("token error")
 	}
 	url := fmt.Sprintf("https://%s/apih5/api/young/course/chapter/saveHistory", YouthStudy)
-	client := &http.Client{}
 	reqBody := fmt.Sprintf("chapterId=%s", memberId)
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer([]byte(reqBody)))
-	if err != nil {
-		log.Fatalf("failed %v", err)
-		return false, nil
+	headers := map[string]string{
+		"X-Litemall-Token":          token,
+		"Content-Type":              "application/x-www-form-urlencoded",
+		"X-Litemall-IdentiFication": "young",
+		"User-Agent":                UserAgent,
 	}
-	req.Header.Add("X-Litemall-Token", token)
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Add("X-Litemall-IdentiFication", "young")
-	req.Header.Add("User-Agent", UserAgent)
-	res, err := client.Do(req)
-	if err != nil {
-		log.Fatalf("failed response %v", err)
+	code, details, err := Post(url, WithHeaders(headers), WithData(reqBody))
+	if err != nil || code != http.StatusOK {
 		return false, err
 	}
-	data, _ := io.ReadAll(res.Body)
-	return gjson.Get(string(data), "errno").String() == strconv.Itoa(0), nil
+	return gjson.Get(details, "errno").String() == strconv.Itoa(0), nil
 }
 
 func Push(chYouth chan Member, queue []Member) {
