@@ -1,7 +1,9 @@
 package main
 
-import youth "github.com/Twacqwq/youth/cmd/youth"
+import (
+	"github.com/Twacqwq/youth/cmd"
+)
 
 func main() {
-	youth.Execute()
+	cmd.Execute()
 }

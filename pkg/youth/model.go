@@ -2,5 +2,5 @@ package pkg
 
 type Member struct {
 	MemberId int
-	Status   bool
+	Status   bool `json:"-"`
 }

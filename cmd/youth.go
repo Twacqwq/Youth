@@ -14,12 +14,12 @@ var (
 	configDir = flag.String("c", ".", "load config.json")
 )
 
-func Execute() {
+func Youth() {
 	flag.Parse()
 
 	f, err := utils.LoadConfig(*configDir)
 	if err != nil {
-		log.Fatalf("failed open config.json. is exist? %v", err)
+		log.Fatalf("failed load config.json. is exist? %v", err)
 		os.Exit(1)
 	}
 	defer f.Close()
