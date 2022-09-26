@@ -10,15 +10,25 @@
 
 ## 开始食用
 
-将memberId存入`config.json`,没有请手动创建
-
-```GO
-go run cmd/youth/main.go 
+1. 生成`config.json`
+```bash
+$ ./youth generate
 ```
 
-or
-
-```GO
-go run cmd/youth/main.go -c "your config dir"
+2. 将**memberId**存入`config.json`
+```json
+[
+    {
+        "memberId": 114514111
+    }
+]
 ```
+
+3. 启动程序
+```bash
+$ ./youth
+```
+
+
+
 
