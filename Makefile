@@ -22,7 +22,7 @@ release-darwin:
 
 
 release-win:
-	zip -r release/youth_0.1.0_win.zip bin/win
+	zip -r release/youth_0.1.0_windows_amd64.zip bin/win
 
 
 release-all: release-linux release-darwin release-win
