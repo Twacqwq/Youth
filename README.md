@@ -29,6 +29,17 @@ $ ./youth generate
 $ ./youth
 ```
 
+### 导出完成截图
+
+```bash
+./youth export screenshot
+```
+
+### 更多帮助
+```bash
+./youth --help
+```
+
 
 
 
