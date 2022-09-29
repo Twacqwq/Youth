@@ -14,15 +14,15 @@ build-all: build-win build-darwin build-linux
 
 
 release-linux:
-	tar -c bin/linux -f release/youth_0.1.0_linux.tar
+	tar -c bin/linux -f release/youth_0.3.0_linux.tar
 
 
 release-darwin:
-	tar -c bin/linux -f release/youth_0.1.0_darwin.tar
+	tar -c bin/linux -f release/youth_0.3.0_darwin.tar
 
 
 release-win:
-	zip -r release/youth_0.1.0_windows_amd64.zip bin/win
+	zip -r release/youth_0.3.0_windows_amd64.zip bin/win
 
 
 release-all: release-linux release-darwin release-win
