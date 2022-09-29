@@ -3,8 +3,10 @@ package pkg
 import (
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	uu "net/url"
+	"os"
 	"strconv"
 	"strings"
 
@@ -65,6 +67,31 @@ func Token(sign string) (string, error) {
 	}
 	token := gjson.Get(details, "data.entity.token").String()
 	return token, nil
+}
+
+func CompleteJPG(fileName, filePath string) {
+	headers := map[string]string{
+		"X-Litemall-IdentiFication": "young",
+		"User-Agent":                UserAgent,
+	}
+	chapterUrl := fmt.Sprintf("https://%s/apih5/api/young/chapter/new", YouthStudy)
+	code, details, err := Get(chapterUrl, WithHeaders(headers))
+	if err != nil || code != http.StatusOK {
+		log.Println("bad request", err, code)
+		return
+	}
+	magicStr := strings.Split(gjson.Get(details, "data.entity.url").String(), "/")[5]
+	url := fmt.Sprintf("https://h5.cyol.com/special/daxuexi/%s/images/end.jpg", magicStr)
+	code, details, err = Get(url, WithHeaders(headers))
+	if err != nil || code != http.StatusOK {
+		log.Println("bad request", err, code)
+		return
+	}
+	name := fmt.Sprintf("%s/%s.jpg", filePath, fileName)
+	if err := os.WriteFile(name, []byte(details), 0644); err != nil {
+		log.Println("write file error,", err)
+		return
+	}
 }
 
 func Do(token, memberId string) (bool, error) {
